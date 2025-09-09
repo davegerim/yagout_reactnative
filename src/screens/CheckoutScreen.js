@@ -23,9 +23,12 @@ import {
 } from '../store/yagoutPaySlice';
 import { PAYMENT_METHODS } from '../utils/yagoutPayConfig';
 import YagoutPayWebView from '../components/YagoutPayWebView';
+// DirectPayment import removed - no longer needed
 import { yagoutPayService } from '../services/yagoutPayService';
+import { paymentService } from '../services/paymentService';
 
 const CheckoutScreen = ({ navigation }) => {
+  console.log('🚀 CheckoutScreen component is rendering!');
   const dispatch = useDispatch();
   const { items, total } = useSelector(state => state.cart);
   const { isLoggedIn, user } = useSelector(state => state.auth);
@@ -34,16 +37,17 @@ const CheckoutScreen = ({ navigation }) => {
   const paymentStatus = useSelector(selectPaymentStatus);
   
   const [shippingAddress, setShippingAddress] = useState({
-    fullName: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
+    fullName: 'Lidetu Ketema',
+    email: 'lij@gmail.com',
+    phone: '0972315453',
+    address: 'Bole Japan',
+    city: 'Addis Ababa',
+    state: 'Addis Ababa',
+    zipCode: '1000',
   });
   
-  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.YAGOUT_HOSTED);
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.YAGOUT_DIRECT_API);
+  // showDirectPayment state removed - no longer needed
   const [cardDetails, setCardDetails] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -52,7 +56,7 @@ const CheckoutScreen = ({ navigation }) => {
   });
 
   const subtotal = total;
-  const tax = total * 0.08;
+  const tax = 0; // No tax - removed
   const shipping = 0; // Free shipping
   const finalTotal = subtotal + tax + shipping;
 
@@ -106,82 +110,87 @@ const CheckoutScreen = ({ navigation }) => {
       return;
     }
 
-    // Reset any previous payment state
-    dispatch(resetPaymentState());
-
-    const orderData = {
-      amount: finalTotal,
-      customerName: shippingAddress.fullName,
-      customerEmail: shippingAddress.email,
-      customerMobile: shippingAddress.phone,
-      billingDetails: {
-        address: shippingAddress.address,
-        city: shippingAddress.city,
-        state: shippingAddress.state,
-        country: 'Ethiopia',
-        zip: shippingAddress.zipCode,
-      },
-      shippingDetails: {
-        address: shippingAddress.address,
-        city: shippingAddress.city,
-        state: shippingAddress.state,
-        country: 'Ethiopia',
-        zip: shippingAddress.zipCode,
-        days: '3-5',
-      },
-      itemDetails: {
-        count: items.length.toString(),
-        value: items.map(item => (item.quantity * item.price).toFixed(2)).join(','),
-        category: items.map(item => 'Shoes').join(','),
-      },
-      successUrl: 'https://yourdomain.com/payment/success',
-      failureUrl: 'https://yourdomain.com/payment/failure',
-    };
-
     try {
-      if (paymentMethod === PAYMENT_METHODS.YAGOUT_HOSTED) {
-        // Initiate hosted payment
-        const result = await dispatch(initiateHostedPayment(orderData));
+      // Process payment directly - NO POPUP MODAL!
+      const paymentData = {
+        // EXACT structure from working React app
+        order_no: `TEST-DIRECT-${Date.now()}`,
+        amount: '1.00', // Fixed amount - no tax
+        customer_name: shippingAddress.fullName,
+        email_id: shippingAddress.email,
+        mobile_no: shippingAddress.phone.replace(/^\+251/, '').replace(/^251/, ''), // Remove country code
+        bill_address: shippingAddress.address,
+        bill_city: shippingAddress.city,
+        bill_state: shippingAddress.state,
+        bill_country: 'ET',
+        bill_zip: shippingAddress.zipCode,
+        pg_id: '67ee846571e740418d688c3f',
+        paymode: 'WA',
+        scheme_id: '7',
+        wallet_type: 'telebirr'
+      };
+
+      console.log('🚀 Processing payment directly from Place Order button!');
+      console.log('🚀 Payment data:', JSON.stringify(paymentData, null, 2));
+
+      // Process payment directly using imported paymentService
+      const response = await paymentService.processDirectPayment(paymentData);
+      
+      if (response.status === 'Success') {
+        // Navigate to success screen
+        navigation.navigate('PaymentSuccess', {
+          paymentData: paymentData,
+          paymentResult: response,
+          orderDetails: {
+            orderNo: paymentData.order_no,
+            amount: paymentData.amount,
+            customerName: paymentData.customer_name,
+            emailId: paymentData.email_id
+          }
+        });
         
-        if (initiateHostedPayment.fulfilled.match(result)) {
-          // Show WebView for hosted payment
-          dispatch(setShowWebView(true));
-        } else {
-          Alert.alert('Payment Error', result.payload?.message || 'Failed to initiate payment');
-        }
+        // Call success handler
+        handlePaymentSuccess(response);
+      } else {
+        // Navigate to failure screen
+        navigation.navigate('PaymentFailure', {
+          paymentData: paymentData,
+          paymentResult: response,
+          errorMessage: response.statusMessage || 'Payment could not be completed',
+          orderDetails: {
+            orderNo: paymentData.order_no,
+            amount: paymentData.amount,
+            customerName: paymentData.customer_name,
+            emailId: paymentData.email_id
+          }
+        });
         
-      } else if (paymentMethod === PAYMENT_METHODS.YAGOUT_API) {
-        // Process API payment
-        const result = await dispatch(processAPIPayment({
-          ...orderData,
-          paymentMethod: 'WA', // Wallet payment
-        }));
-        
-        if (processAPIPayment.fulfilled.match(result)) {
-          handlePaymentSuccess(result.payload);
-        } else {
-          Alert.alert('Payment Error', result.payload?.message || 'Payment processing failed');
-        }
-        
-      } else if (paymentMethod === PAYMENT_METHODS.CREDIT_CARD) {
-        // Traditional credit card processing
-        handleTraditionalPayment();
-        
-      } else if (paymentMethod === PAYMENT_METHODS.PAYPAL) {
-        // PayPal processing
-        handlePayPalPayment();
+        // Call failure handler
+        handlePaymentFailure(response);
       }
       
     } catch (error) {
       console.error('Payment processing error:', error);
-      Alert.alert('Payment Error', 'An unexpected error occurred. Please try again.');
+      
+      // Navigate to failure screen for errors
+      navigation.navigate('PaymentFailure', {
+        paymentData: paymentData,
+        paymentResult: null,
+        errorMessage: error.message || 'An unexpected error occurred. Please try again.',
+        orderDetails: {
+          orderNo: paymentData?.order_no,
+          amount: paymentData?.amount,
+          customerName: paymentData?.customer_name,
+          emailId: paymentData?.email_id
+        }
+      });
     }
   };
 
   const handleTraditionalPayment = () => {
     Alert.alert(
       'Order Confirmation',
-      `Place order for $${finalTotal.toFixed(2)}?`,
+      `Place order for ${finalTotal.toFixed(2)} ETB?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -240,7 +249,7 @@ const CheckoutScreen = ({ navigation }) => {
             {item.name} (Size: {item.size})
           </Text>
           <Text style={styles.orderItemPrice}>
-            {item.quantity} x ${item.price.toFixed(2)} = ${(item.quantity * item.price).toFixed(2)}
+            {item.quantity} x {item.price.toFixed(2)} ETB = {(item.quantity * item.price).toFixed(2)} ETB
           </Text>
         </View>
       ))}
@@ -248,11 +257,11 @@ const CheckoutScreen = ({ navigation }) => {
       <View style={styles.orderTotal}>
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Subtotal:</Text>
-          <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
+          <Text style={styles.totalValue}>{subtotal.toFixed(2)} ETB</Text>
         </View>
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Tax:</Text>
-          <Text style={styles.totalValue}>${tax.toFixed(2)}</Text>
+          <Text style={styles.totalValue}>{tax.toFixed(2)} ETB</Text>
         </View>
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Shipping:</Text>
@@ -260,7 +269,7 @@ const CheckoutScreen = ({ navigation }) => {
         </View>
         <View style={[styles.totalRow, styles.finalTotalRow]}>
           <Text style={styles.finalTotalLabel}>Total:</Text>
-          <Text style={styles.finalTotalValue}>${finalTotal.toFixed(2)}</Text>
+          <Text style={styles.finalTotalValue}>{finalTotal.toFixed(2)} ETB</Text>
         </View>
       </View>
     </View>
@@ -339,114 +348,16 @@ const CheckoutScreen = ({ navigation }) => {
             <TouchableOpacity
               style={[
                 styles.paymentMethod,
-                paymentMethod === PAYMENT_METHODS.YAGOUT_HOSTED && styles.selectedPaymentMethod
+                styles.selectedPaymentMethod
               ]}
-              onPress={() => setPaymentMethod(PAYMENT_METHODS.YAGOUT_HOSTED)}
             >
-              <Ionicons name="card" size={20} color="#333" />
-              <Text style={styles.paymentMethodText}>YagoutPay (Hosted)</Text>
-              <Text style={styles.paymentMethodSubtext}>Secure payment gateway</Text>
-              {paymentMethod === PAYMENT_METHODS.YAGOUT_HOSTED && (
-                <Ionicons name="checkmark-circle" size={20} color="#007AFF" />
-              )}
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[
-                styles.paymentMethod,
-                paymentMethod === PAYMENT_METHODS.YAGOUT_API && styles.selectedPaymentMethod
-              ]}
-              onPress={() => setPaymentMethod(PAYMENT_METHODS.YAGOUT_API)}
-            >
-              <Ionicons name="wallet" size={20} color="#333" />
-              <Text style={styles.paymentMethodText}>YagoutPay (TeleBirr)</Text>
-              <Text style={styles.paymentMethodSubtext}>Pay with TeleBirr wallet</Text>
-              {paymentMethod === PAYMENT_METHODS.YAGOUT_API && (
-                <Ionicons name="checkmark-circle" size={20} color="#007AFF" />
-              )}
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[
-                styles.paymentMethod,
-                paymentMethod === PAYMENT_METHODS.CREDIT_CARD && styles.selectedPaymentMethod
-              ]}
-              onPress={() => setPaymentMethod(PAYMENT_METHODS.CREDIT_CARD)}
-            >
-              <Ionicons name="card" size={20} color="#333" />
-              <Text style={styles.paymentMethodText}>Credit Card</Text>
-              <Text style={styles.paymentMethodSubtext}>Visa, Mastercard, Amex</Text>
-              {paymentMethod === PAYMENT_METHODS.CREDIT_CARD && (
-                <Ionicons name="checkmark-circle" size={20} color="#007AFF" />
-              )}
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[
-                styles.paymentMethod,
-                paymentMethod === PAYMENT_METHODS.PAYPAL && styles.selectedPaymentMethod
-              ]}
-              onPress={() => setPaymentMethod(PAYMENT_METHODS.PAYPAL)}
-            >
-              <Ionicons name="logo-paypal" size={20} color="#333" />
-              <Text style={styles.paymentMethodText}>PayPal</Text>
-              <Text style={styles.paymentMethodSubtext}>Pay with PayPal account</Text>
-              {paymentMethod === PAYMENT_METHODS.PAYPAL && (
-                <Ionicons name="checkmark-circle" size={20} color="#007AFF" />
-              )}
+              <Ionicons name="flash" size={20} color="#333" />
+              <Text style={styles.paymentMethodText}>YagoutPay (Direct API)</Text>
+              <Text style={styles.paymentMethodSubtext}>Direct API integration</Text>
+              <Ionicons name="checkmark-circle" size={20} color="#007AFF" />
             </TouchableOpacity>
           </View>
 
-          {paymentMethod === PAYMENT_METHODS.CREDIT_CARD && (
-            <View style={styles.cardForm}>
-              <TextInput
-                style={styles.input}
-                placeholder="Card Number (1234 5678 9012 3456)"
-                value={cardDetails.cardNumber}
-                onChangeText={(value) => {
-                  // Format card number with spaces
-                  const formatted = value.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim();
-                  handleInputChange('payment', 'cardNumber', formatted);
-                }}
-                keyboardType="numeric"
-                maxLength={19}
-              />
-              
-              <View style={styles.row}>
-                <TextInput
-                  style={[styles.input, styles.halfInput]}
-                  placeholder="MM/YY"
-                  value={cardDetails.expiryDate}
-                  onChangeText={(value) => {
-                    // Format expiry date
-                    let formatted = value.replace(/\D/g, '');
-                    if (formatted.length >= 2) {
-                      formatted = formatted.substring(0, 2) + '/' + formatted.substring(2, 4);
-                    }
-                    handleInputChange('payment', 'expiryDate', formatted);
-                  }}
-                  keyboardType="numeric"
-                  maxLength={5}
-                />
-                <TextInput
-                  style={[styles.input, styles.halfInput]}
-                  placeholder="CVV"
-                  value={cardDetails.cvv}
-                  onChangeText={(value) => handleInputChange('payment', 'cvv', value)}
-                  keyboardType="numeric"
-                  maxLength={4}
-                  secureTextEntry
-                />
-              </View>
-              
-              <TextInput
-                style={styles.input}
-                placeholder="Cardholder Name"
-                value={cardDetails.cardholderName}
-                onChangeText={(value) => handleInputChange('payment', 'cardholderName', value)}
-              />
-            </View>
-          )}
         </View>
       </ScrollView>
 
@@ -470,7 +381,7 @@ const CheckoutScreen = ({ navigation }) => {
           ) : (
             <>
               <Text style={styles.placeOrderText}>
-                Place Order - ${finalTotal.toFixed(2)}
+                Place Order - {finalTotal.toFixed(2)} ETB
               </Text>
               <Ionicons name="checkmark-circle" size={20} color="white" />
             </>
@@ -481,10 +392,7 @@ const CheckoutScreen = ({ navigation }) => {
         <View style={styles.paymentInfo}>
           <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
           <Text style={styles.paymentInfoText}>
-            {paymentMethod === PAYMENT_METHODS.YAGOUT_HOSTED && 'Secured by YagoutPay Hosted Gateway'}
-            {paymentMethod === PAYMENT_METHODS.YAGOUT_API && 'Secured by YagoutPay TeleBirr'}
-            {paymentMethod === PAYMENT_METHODS.CREDIT_CARD && 'Secured by SSL Encryption'}
-            {paymentMethod === PAYMENT_METHODS.PAYPAL && 'Secured by PayPal'}
+            Secured by YagoutPay Direct API
           </Text>
         </View>
       </View>
@@ -494,6 +402,8 @@ const CheckoutScreen = ({ navigation }) => {
         onPaymentComplete={handlePaymentSuccess}
         onPaymentCancel={handlePaymentCancel}
       />
+      
+      {/* POPUP MODAL REMOVED - Payment processed directly from Place Order button */}
     </SafeAreaView>
   );
 };
@@ -674,6 +584,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#4CAF50',
     fontWeight: '500',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    width: '90%',
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e5e9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 4,
   },
 });
 

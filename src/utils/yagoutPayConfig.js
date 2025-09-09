@@ -6,9 +6,9 @@ export const YAGOUT_PAY_CONFIG = {
     POST_URL_API: 'https://uatcheckout.yagoutpay.com/ms-transaction-core-1-0/apiRedirection/apiIntegration',
     ENCRYPTION_URL: 'https://uatcheckout.yagoutpay.com/ms-transaction-core-1-0/othersRedirection/encryption',
     MERCHANT_ID_HOSTED: '202504290002',
-    MERCHANT_ID_API: '202505090001',
+    MERCHANT_ID_API: '202508080001',
     ENCRYPTION_KEY_HOSTED: 'neTdYIKd87JEj4C6ZoYjaeBiCoeOr40ZKBEI8EU/8lo=',
-    ENCRYPTION_KEY_API: '6eUzH0ZdoVVBMTHrgdA0sqOFyKm54zojV4/faiSirkE=',
+    ENCRYPTION_KEY_API: 'IG3CNW5uNrUO2mU2htUOWb9rgXCF7XMAXmL63d7wNZo=',
     AGGREGATOR_ID: 'yagout',
   },
   
@@ -61,6 +61,7 @@ export const getCurrentConfig = (isProduction = false) => {
 export const PAYMENT_METHODS = {
   YAGOUT_HOSTED: 'yagout_hosted',
   YAGOUT_API: 'yagout_api',
+  YAGOUT_DIRECT_API: 'yagout_direct_api',
   CREDIT_CARD: 'credit',
   PAYPAL: 'paypal',
 };

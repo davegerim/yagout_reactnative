@@ -73,7 +73,7 @@ const CartScreen = ({ navigation }) => {
         {item.selectedColor && (
           <Text style={styles.itemColor}>Color: {item.selectedColor}</Text>
         )}
-        <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+        <Text style={styles.itemPrice}>{item.price.toFixed(2)} ETB</Text>
       </View>
 
       <View style={styles.quantityContainer}>
@@ -150,7 +150,7 @@ const CartScreen = ({ navigation }) => {
       <View style={styles.summaryContainer}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Items ({items.length})</Text>
-          <Text style={styles.summaryValue}>${total.toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>{total.toFixed(2)} ETB</Text>
         </View>
         
         <View style={styles.summaryRow}>
@@ -160,12 +160,12 @@ const CartScreen = ({ navigation }) => {
         
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Tax</Text>
-          <Text style={styles.summaryValue}>${(total * 0.08).toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>0.00 ETB</Text>
         </View>
 
         <View style={[styles.summaryRow, styles.totalRow]}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>${(total * 1.08).toFixed(2)}</Text>
+          <Text style={styles.totalValue}>{total.toFixed(2)} ETB</Text>
         </View>
 
         <TouchableOpacity

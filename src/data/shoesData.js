@@ -2,7 +2,7 @@ export const shoesData = [
   {
     id: 1,
     name: 'Nike Air Max 270',
-    price: 150.00,
+    price: 1.00,
     category: 'Running',
     brand: 'Nike',
     description: 'The Nike Air Max 270 delivers visible Air Max cushioning and all-day comfort. Features a sleek design perfect for running and casual wear.',
@@ -19,7 +19,7 @@ export const shoesData = [
   {
     id: 2,
     name: 'Adidas Ultraboost 22',
-    price: 180.00,
+    price: 1.00,
     category: 'Running',
     brand: 'Adidas',
     description: 'Experience incredible energy return with Adidas Ultraboost 22. Perfect for long-distance running with superior comfort and style.',
@@ -36,7 +36,7 @@ export const shoesData = [
   {
     id: 3,
     name: 'Converse Chuck Taylor All Star',
-    price: 65.00,
+    price: 1.00,
     category: 'Casual',
     brand: 'Converse',
     description: 'Classic canvas sneakers that never go out of style. Perfect for everyday wear with a timeless design.',
@@ -53,7 +53,7 @@ export const shoesData = [
   {
     id: 4,
     name: 'Jordan Air Jordan 1',
-    price: 170.00,
+    price: 1.00,
     category: 'Sports',
     brand: 'Jordan',
     description: 'Iconic basketball shoe with premium leather construction. A legend on and off the court.',
@@ -70,7 +70,7 @@ export const shoesData = [
   {
     id: 5,
     name: 'Vans Old Skool',
-    price: 60.00,
+    price: 1.00,
     category: 'Casual',
     brand: 'Vans',
     description: 'Classic skate shoe with the iconic side stripe. Durable and comfortable for skating and everyday wear.',
@@ -87,7 +87,7 @@ export const shoesData = [
   {
     id: 6,
     name: 'New Balance 990v5',
-    price: 175.00,
+    price: 1.00,
     category: 'Running',
     brand: 'New Balance',
     description: 'Made in USA premium running shoe with superior cushioning and support for serious runners.',
@@ -104,7 +104,7 @@ export const shoesData = [
   {
     id: 7,
     name: 'Puma RS-X3',
-    price: 110.00,
+    price: 1.00,
     category: 'Sports',
     brand: 'Puma',
     description: 'Bold and futuristic design with excellent cushioning. Perfect for training and street style.',
@@ -121,7 +121,7 @@ export const shoesData = [
   {
     id: 8,
     name: 'Cole Haan Oxford',
-    price: 200.00,
+    price: 1.00,
     category: 'Formal',
     brand: 'Cole Haan',
     description: 'Premium leather dress shoes perfect for business and formal occasions. Classic oxford style.',

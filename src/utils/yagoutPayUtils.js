@@ -225,7 +225,8 @@ export const formatAPITransactionData = (transactionData) => {
     txn_details: {
       agId: YAGOUT_PAY_CONFIG.COMMON.AGGREGATOR_ID,
       meId: getCurrentConfig().MERCHANT_ID_API,
-      orderNo: orderNo,
+      orderID: orderNo,  // Changed from orderNo to orderID
+      orderNo: orderNo,  // Keep both for compatibility
       amount: amount.toString(),
       country: YAGOUT_PAY_CONFIG.COMMON.COUNTRY,
       currency: YAGOUT_PAY_CONFIG.COMMON.CURRENCY,

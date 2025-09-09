@@ -45,7 +45,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.rating}>{item.rating}</Text>
           <Text style={styles.reviews}>({item.reviews})</Text>
         </View>
-        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+        <Text style={styles.productPrice}>{item.price.toFixed(2)} ETB</Text>
       </View>
     </TouchableOpacity>
   );

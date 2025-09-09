@@ -8,6 +8,8 @@ import HomeScreen from '../screens/HomeScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import CartScreen from '../screens/CartScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
+import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
+import PaymentFailureScreen from '../screens/PaymentFailureScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import LoginScreen from '../screens/LoginScreen';
 
@@ -49,6 +51,24 @@ function CartStack() {
         name="Checkout" 
         component={CheckoutScreen}
         options={{ title: 'Checkout' }}
+      />
+      <Stack.Screen 
+        name="PaymentSuccess" 
+        component={PaymentSuccessScreen}
+        options={{ 
+          title: 'Payment Success',
+          headerLeft: null, // Disable back button
+          gestureEnabled: false, // Disable swipe back
+        }}
+      />
+      <Stack.Screen 
+        name="PaymentFailure" 
+        component={PaymentFailureScreen}
+        options={{ 
+          title: 'Payment Failed',
+          headerLeft: null, // Disable back button
+          gestureEnabled: false, // Disable swipe back
+        }}
       />
     </Stack.Navigator>
   );

@@ -99,7 +99,7 @@ const ProductDetailScreen = ({ route, navigation }) => {
         </View>
 
         {/* Price */}
-        <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+        <Text style={styles.price}>{product.price.toFixed(2)} ETB</Text>
 
         {/* Description */}
         <View style={styles.section}>
