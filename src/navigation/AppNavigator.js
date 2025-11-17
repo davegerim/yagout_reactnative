@@ -12,6 +12,7 @@ import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
 import PaymentFailureScreen from '../screens/PaymentFailureScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import LoginScreen from '../screens/LoginScreen';
+import PaymentLinkTestScreen from '../screens/PaymentLinkTestScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -87,6 +88,11 @@ function ProfileStack() {
         name="Login" 
         component={LoginScreen}
         options={{ title: 'Login' }}
+      />
+      <Stack.Screen 
+        name="PaymentLinkTest" 
+        component={PaymentLinkTestScreen}
+        options={{ title: 'YagoutPay Link Testing' }}
       />
     </Stack.Navigator>
   );

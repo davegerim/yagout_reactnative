@@ -66,6 +66,13 @@ const ProfileScreen = ({ navigation }) => {
       onPress: () => Alert.alert('Coming Soon', 'Payment methods coming soon!'),
     },
     {
+      id: 8,
+      title: 'YagoutPay Link Testing',
+      subtitle: 'Test Payment Link and Static Link APIs',
+      icon: 'link-outline',
+      onPress: () => navigation.navigate('PaymentLinkTest'),
+    },
+    {
       id: 5,
       title: 'Notifications',
       subtitle: 'Manage your notifications',
