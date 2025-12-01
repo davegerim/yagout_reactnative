@@ -133,12 +133,7 @@ Web: Press w
 Edit src/utils/yagoutPayConfig.js (do NOT commit production keys):
 
 export const YAGOUT_PAY_CONFIG = {
-  TEST: {
-    POST_URL_API: 'https://uatcheckout.yagoutpay.com/...',
-    MERCHANT_ID_API: '202508080001',
-    ENCRYPTION_KEY_API: 'IG3CNW5uNrUO2mU2htUOWb9rgXCF7XMAXmL63d7wNZo=',
-    AGGREGATOR_ID: 'yagout',
-  },
+
   PRODUCTION: {
     POST_URL_API: 'https://checkout.yagoutpay.com/...',
     MERCHANT_ID_API: 'YOUR_PROD_MERCHANT_ID',
