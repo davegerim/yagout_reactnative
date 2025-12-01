@@ -345,32 +345,3 @@ SECURITY.md — brief security disclosure policy and how to report issues.
  Add tests that validate encryption/decryption roundtrip
 
  Run a security review or short pen-test if deploying for real payments
-
-5) GitHub Actions sample (CI) — basic lint & tests on PR
-
-Create .github/workflows/ci.yml:
-
-name: CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm run lint      # add lint script in package.json
-      - run: npm test          # add test script for unit tests
