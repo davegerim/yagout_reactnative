@@ -196,8 +196,6 @@ Start backend + Expo.
 
 Add product → Checkout → Use TEST credentials:
 
-Merchant ID: 202508080001
-
 Test amount: 1.00 ETB
 
 Test phone: any valid Ethiopian number
